@@ -1,9 +1,17 @@
 # Design description
 - tools/packages
-  
+  - Django
+  - djangorestframework
 - assumption
+  - "Users are part of a company" == "Users are clients of a company once they have a card"
+  - a user can have more than one card in any company
 - class design
+  - see class_design.pdf
 - api design
+  - `me/<str:company>/<str:name>`: check user information given company's name and user's name
+  - `card/<str:company>/<str:name>/<int:card>`: identify user and check card information given compant's name, user's name and card number
+  - `modify/<str:company>/<str:name>/<int:card_number>/<int:new_limit>`: identify user & permission, then modify card limit given compant's name, user's name, card number and new limit number
+  - `create/<int:number>/<str:name>/<str:company>/<str:expiration_date>/<int:masked_number>/<int:limit>/<int:balance>/<str:permission>`: create a new card, update/create the user and update company information given relevant information
 
 # Manual and testing
 - setting up
@@ -18,7 +26,6 @@
   5. Go to `http://127.0.0.1:8000/admin/`, and login as a superuser
   6. Inside the interface, `create 2 company objects`. To be consistent with following sample data, name them as "a" and "b" , and leave other attributes blank.
 
-- endpoints
 - testing
   ## Challenge 1
   1. Create 2 cards and users of company "a" through `/create/<int:number>/<str:name>/<str:company>/<str:expiration_date>/<int:masked_number>/<int:limit>/<int:balance>/<str:permission>`
