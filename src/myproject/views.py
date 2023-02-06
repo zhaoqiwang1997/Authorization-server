@@ -8,46 +8,28 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 
-# # TODO: create card
-# card_a_attributes = {
-#     "card_number": 100100,
-#     "user_name": "Zhaoqi",
-#     "expiration_data": "2023-02-10",
-#     "masked_number": "111",
-#     "limit": "2000",
-#     "balance": "1000",
-# }
 
-# card_b_attributes = {
-#     "card_number": 200100,
-#     "user_name": "Lukas",
-#     "expiration_data": "2025-05-10",
-#     "masked_number": "222",
-#     "limit": "5000",
-#     "balance": "4000",
-# }
-
-# card_a = Card.objects.create(**card_a_attributes)
-# card_b = Card.objects.create(**card_b_attributes)
 @api_view(['GET'])
 def get_user_info(response, company, name):
-
+    # find the user and company
     try:
         user = User.objects.get(user_name=name, com_name=company)
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    # return Json content
     serializer = UserSerializer(user)
     return JsonResponse(serializer.data, safe=False)
 
 @api_view(['GET'])
 def get_card_info(response, company, name, card):
-
+    # find the user and company
     try:
         user = User.objects.get(user_name=name, com_name=company)
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    # find the card
     try:
         card = Card.objects.get(pk=card)
     except Card.DoesNotExist:
@@ -56,7 +38,7 @@ def get_card_info(response, company, name, card):
     user_serializer = UserSerializer(user)
     card_serializer = CardSerializer(card)
     
-    # check permission
+    # check permission (admin/normal)
     if user.com_name == card.com_name:
         if user.user_permission == "admin":
             return JsonResponse({'user':user_serializer.data, 'card':card_serializer.data}, safe=False)
@@ -67,12 +49,12 @@ def get_card_info(response, company, name, card):
 
 @api_view(['GET','POST'])
 def modify_limit(response, company, name, card_number, new_limit):
-
+    # find the user and company
     try:
         user = User.objects.get(user_name=name, com_name=company)
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
+    # find the card
     try:
         card = Card.objects.get(pk=card_number)
     except Card.DoesNotExist:
@@ -81,7 +63,7 @@ def modify_limit(response, company, name, card_number, new_limit):
     user_serializer = UserSerializer(user)
     card_serializer = CardSerializer(card)
 
-    # check permission
+    # check permission (admin/normal)
     if user.com_name == card.com_name:
         if user.user_permission == "admin":
 
@@ -94,6 +76,7 @@ def modify_limit(response, company, name, card_number, new_limit):
 
 @api_view(['GET','POST'])
 def create_card(response, number, name, company, expiration_date, masked_number, limit, balance, permission):
+    # check if the card exists
     if not Card.objects.filter(card_number=number).exists():
         expiration = datetime.strptime(expiration_date, '%Y-%m-%d').date()
         card_attributes = {
@@ -117,6 +100,7 @@ def create_card(response, number, name, company, expiration_date, masked_number,
 
         # update user
         if User.objects.filter(user_name=name, com_name=company).exists():
+            # if the user exists, update its "cards" filed
             user = User.objects.get(user_name=name, com_name=company)
             user_serializer= UserSerializer(user)
             cards = user_serializer.data['user_cards']
@@ -124,6 +108,7 @@ def create_card(response, number, name, company, expiration_date, masked_number,
             User.objects.filter(user_name=name, com_name=company).update(user_cards=cards)
             return JsonResponse({'card':card_serializer.data, 'user':user_serializer.data, 'company':com_serializer.data}, safe=False)
         else:
+            # if the user not exists, create a new user
             user_attributes = {
             "user_name": name,
             "com_name": company,

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Card, User, Company
 
+# convert objects to JSON
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
